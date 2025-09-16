@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coal GCV Prediction System</title>
+    <link rel="stylesheet" href="{% static 'myapp/style.css' %}">
+    <script src="{% static 'myapp/app.js' %}"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="header__title">Proximate Analysis Based Prediction of Coal GCV</h1>
+            <p class="header__subtitle">with Geochemical Feature Embedding Network (GFEN) and XGboost Regressor</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="prediction-form-container">
+                <form id="gcvForm" class="prediction-form">
+                    <!-- Coal Sample Information Section -->
+                    <section class="form-section">
+                        <h2 class="form-section__title">Coal Sample Information</h2>
+                        
+                        <div class="form-group">
+                            <label for="coalSource" class="form-label">
+                                Coal Sample Source
+                                <span class="tooltip" data-tooltip="Geographic origin of the coal sample affects GCV prediction">ℹ️</span>
+                            </label>
+                            <select id="coalSource" name="coalSource" class="form-control" required>
+                                <option value="">Select Coal Source</option>
+                                <option value="Central India Coal">Central India Coal</option>
+                                <option value="Southern India Coal">Southern India Coal</option>
+                            </select>
+                            <div class="error-message" id="coalSourceError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="analysisEnvironment" class="form-label">
+                                Analysis Environment
+                                <span class="tooltip" data-tooltip="Environmental conditions during analysis affect moisture content and GCV">ℹ️</span>
+                            </label>
+                            <select id="analysisEnvironment" name="analysisEnvironment" class="form-control" required>
+                                <option value="">Select Analysis Environment</option>
+                                <option value="On Air Dried Basis">On Air Dried Basis</option>
+                                <option value="Moist on 60% RH & 40°C">Moist on 60% RH & 40°C</option>
+                            </select>
+                            <div class="error-message" id="analysisEnvironmentError"></div>
+                        </div>
+                    </section>
+
+                    <!-- Coal Analysis Parameters Section -->
+                    <section class="form-section">
+                        <h2 class="form-section__title">Coal Analysis Parameters</h2>
+                        
+                        <div class="parameters-grid">
+                            <div class="form-group">
+                                <label for="moisture" class="form-label">
+                                    Moisture (%) *
+                                    <span class="tooltip" data-tooltip="Water content in coal, reduces heating value">ℹ️</span>
+                                </label>
+                                <input type="number" id="moisture" name="moisture" class="form-control" 
+                                       step="0.01" required>
+                                <div class="error-message" id="moistureError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ash" class="form-label">
+                                    Ash (%) *
+                                    <span class="tooltip" data-tooltip="Non-combustible mineral matter, lowers GCV">ℹ️</span>
+                                </label>
+                                <input type="number" id="ash" name="ash" class="form-control" 
+                                       step="0.01" required>
+                                <div class="error-message" id="ashError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="volatileMatter" class="form-label">
+                                    Volatile Matter (%) *
+                                    <span class="tooltip" data-tooltip="Hydrocarbons released during heating, affects ignition">ℹ️</span>
+                                </label>
+                                <input type="number" id="volatileMatter" name="volatileMatter" class="form-control" 
+                                       step="0.01" required>
+                                <div class="error-message" id="volatileMatterError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="fixedCarbon" class="form-label">
+                                    Fixed Carbon (%)
+                                    <span class="tooltip" data-tooltip="Pure carbon content after volatile removal. Will be auto-calculated if not provided">ℹ️</span>
+                                </label>
+                                <input type="number" id="fixedCarbon" name="fixedCarbon" class="form-control" 
+                                       step="0.01">
+                                <div class="calculated-note" id="fixedCarbonNote">Will be auto-calculated: <span id="calculatedFC">--</span>%</div>
+                                <div class="error-message" id="fixedCarbonError"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Action Buttons -->
+                    <div class="form-actions">
+                        <button type="button" id="clearBtn" class="btn btn--outline">Clear All</button>
+                        <button type="submit" id="predictBtn" class="btn btn--primary btn--lg">
+                            <span class="btn__text">Predict GCV</span>
+                            <span class="btn__loading hidden">Calculating...</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Results Section -->
+                <div id="resultsSection" class="results-section hidden">
+                    <h2 class="results-section__title">Prediction Results</h2>
+                    
+                    <div class="results-grid">
+                        <div class="result-card result-card--primary">
+                            <h3 class="result-card__title">Predicted GCV</h3>
+                            <div class="result-card__value" id="gcvValue">-- kcal/kg</div>
+                        </div>
+                        
+                        <!-- <div class="result-card">
+                            <h3 class="result-card__title">Coal Quality</h3>
+                            <div class="result-card__status" id="coalQuality">
+                                <span class="status" id="qualityBadge">--</span>
+                            </div>
+                        </div> -->
+                    </div>
+
+                    <div class="prediction-details">
+                        <h3 class="prediction-details__title">Calculation Details</h3>
+                        <div class="details-grid" id="calculationDetails">
+                            <!-- Details will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prediction History
+                <div id="historySection" class="history-section hidden">
+                    <h2 class="history-section__title">Recent Predictions</h2>
+                    <div class="history-list" id="historyList">
+                    </div>
+                </div> -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer__text">
+                <strong>Contributors :</strong> Dr. Swati Hira, Karri Tirumala Venkatesh ( Indian Institute of Information Technology, Nagpur )
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>
