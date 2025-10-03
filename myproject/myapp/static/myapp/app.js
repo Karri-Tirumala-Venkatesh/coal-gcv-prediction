@@ -172,8 +172,16 @@ function displayCalculationDetails(result) {
         { label: 'Analysis Environment', value: result.inputs.analysisEnvironment },
         { label: 'Moisture (%)', value: parseFloat(result.inputs.moisture).toFixed(2) },
         { label: 'Ash (%)', value: parseFloat(result.inputs.ash).toFixed(2) },
-        { label: 'Volatile Matter (%)', value: parseFloat(result.inputs.volatileMatter).toFixed(2) },
-        { label: 'Fixed Carbon (%)', value: parseFloat(result.inputs.fixedCarbon).toFixed(2) }
+        { 
+            label: 'Volatile Matter (%)', 
+            value: parseFloat(result.inputs.volatileMatter).toFixed(2) +
+                (result.volatileMatterDefaulted ? ' <span class="defaulted-note">(defaulted)</span>' : '')
+        },
+        { 
+            label: 'Fixed Carbon (%)', 
+            value: parseFloat(result.inputs.fixedCarbon).toFixed(2) +
+                (result.fixedCarbonDefaulted ? ' <span class="defaulted-note">(recalculated)</span>' : '')
+        }
     ];
     resultElements.calculationDetails.innerHTML = details.map(detail => `
         <div class="detail-item">
