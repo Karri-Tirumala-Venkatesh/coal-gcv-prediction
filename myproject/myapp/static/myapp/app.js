@@ -33,7 +33,6 @@ let resultElements = {};
 document.addEventListener('DOMContentLoaded', function() {
     initializeElements();
     bindEventListeners();
-    updateCalculatedFixedCarbon();
 });
 
 function initializeElements() {
@@ -46,8 +45,7 @@ function initializeElements() {
         volatileMatter: document.getElementById('volatileMatter'),
         fixedCarbon: document.getElementById('fixedCarbon'),
         predictBtn: document.getElementById('predictBtn'),
-        clearBtn: document.getElementById('clearBtn'),
-        calculatedFC: document.getElementById('calculatedFC')
+        clearBtn: document.getElementById('clearBtn')
     };
     resultElements = {
         resultsSection: document.getElementById('resultsSection'),
@@ -59,9 +57,6 @@ function initializeElements() {
 function bindEventListeners() {
     formElements.form.addEventListener('submit', handleFormSubmit);
     formElements.clearBtn.addEventListener('click', clearForm);
-    [formElements.moisture, formElements.ash, formElements.volatileMatter].forEach(input => {
-        input.addEventListener('input', updateCalculatedFixedCarbon);
-    });
     Object.values(formElements).forEach(element => {
         if (element && (element.tagName === 'INPUT' || element.tagName === 'SELECT')) {
             element.addEventListener('blur', validateField);
@@ -81,7 +76,7 @@ function handleFormSubmit(event) {
         moisture: formElements.moisture.value,
         ash: formElements.ash.value,
         volatileMatter: formElements.volatileMatter.value,
-        fixedCarbon: formElements.fixedCarbon.value || updateCalculatedFixedCarbon()
+        fixedCarbon: formElements.fixedCarbon.value // Do not auto-calculate here
     };
 
     fetch('/predict/', {
@@ -149,15 +144,6 @@ function clearFieldError(event) {
     field.parentElement.classList.remove('has-error');
 }
 
-function updateCalculatedFixedCarbon() {
-    const moisture = parseFloat(formElements.moisture.value) || 0;
-    const ash = parseFloat(formElements.ash.value) || 0;
-    const volatileMatter = parseFloat(formElements.volatileMatter.value) || 0;
-    const calculatedFC = Math.max(0, 100 - moisture - ash - volatileMatter);
-    formElements.calculatedFC.textContent = calculatedFC.toFixed(2);
-    return calculatedFC;
-}
-
 function displayResults(result) {
     resultElements.resultsSection.classList.remove('hidden');
     resultElements.gcvValue.textContent = result.gcv ? `${result.gcv} kcal/kg` : '--';
@@ -196,7 +182,6 @@ function clearForm() {
     document.querySelectorAll('.error-message').forEach(element => { element.textContent = ''; });
     document.querySelectorAll('.form-group').forEach(group => { group.classList.remove('has-error', 'has-success'); });
     resultElements.resultsSection.classList.add('hidden');
-    formElements.calculatedFC.textContent = '--';
     formElements.coalSource.focus();
 }
 
